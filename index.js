@@ -90,7 +90,7 @@ function revCollector(opts) {
                 dirReplacements.forEach(function (dirRule) {
                     patterns.forEach(function (pattern) {
                         changes.push({
-                            regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
+                            regexp: new RegExp(  dirRule.dirRX + pattern, 'gm' ),
                             patternLength: (dirRule.dirRX + pattern).length,
                             replacement: _.isFunction(dirRule.dirRpl)
                                             ? dirRule.dirRpl(manifest[key])
@@ -102,7 +102,7 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     // without dirReplacements we must leave asset filenames with prefixes in its original state
                     changes.push({
-                        regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'g' ),
+                        regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'gm' ),
                         patternLength: pattern.length,
                         replacement: '$1' + manifest[key]
                     });
