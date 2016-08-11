@@ -77,37 +77,46 @@ function revCollector(opts) {
             });
         }
 
+        if ( dirReplacements.length ) {
+            dirReplacements.forEach(function (dirRule) {
+                changes.push({
+                    regexp: new RegExp(dirRule.dirRX, 'gm' ),
+                    patternLength: dirRule.length,
+                    replacement: closeDirBySep(dirRule.dirRpl)
+                });
+            });
+            /*
+            dirReplacements.forEach(function (dirRule) {
+                patterns.forEach(function (pattern) {
+                    changes.push({
+                        regexp: new RegExp(  dirRule.dirRX + pattern, 'gm' ),
+                        patternLength: (dirRule.dirRX + pattern).length,
+                        replacement: _.isFunction(dirRule.dirRpl)
+                            ? dirRule.dirRpl(manifest[key])
+                            : closeDirBySep(dirRule.dirRpl) + manifest[key]
+                    });
+                });
+            });
+            */
+        }
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
                 patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) )
-                            + opts.revSuffix
-                            + escPathPattern( path.extname(key) )
-                        );
+                    + opts.revSuffix
+                    + escPathPattern( path.extname(key) )
+                );
             }
-
-            if ( dirReplacements.length ) {
-                dirReplacements.forEach(function (dirRule) {
-                    patterns.forEach(function (pattern) {
-                        changes.push({
-                            regexp: new RegExp(  dirRule.dirRX + pattern, 'gm' ),
-                            patternLength: (dirRule.dirRX + pattern).length,
-                            replacement: _.isFunction(dirRule.dirRpl)
-                                            ? dirRule.dirRpl(manifest[key])
-                                            : closeDirBySep(dirRule.dirRpl) + manifest[key]
-                        });
-                    });
+   //  else {
+            patterns.forEach(function (pattern) {
+                // without dirReplacements we must leave asset filenames with prefixes in its original state
+                changes.push({
+                    regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'gm' ),
+                    patternLength: pattern.length,
+                    replacement: '$1' + manifest[key]
                 });
-            } else {
-                patterns.forEach(function (pattern) {
-                    // without dirReplacements we must leave asset filenames with prefixes in its original state
-                    changes.push({
-                        regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'gm' ),
-                        patternLength: pattern.length,
-                        replacement: '$1' + manifest[key]
-                    });
-                });
-            }
+            });
+       //  }
         }
 
         // Replace longer patterns first
@@ -117,6 +126,7 @@ function revCollector(opts) {
                 return b.patternLength - a.patternLength;
             }
         );
+
         mutables.forEach(function (file){
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
